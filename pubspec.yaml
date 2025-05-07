@@ -38,6 +38,7 @@ dependencies:
   # 数据库和存储
   sqflite: ^2.3.0
   sqflite_common_ffi: ^2.3.0 # 添加 FFI 支持
+  sqlite3_flutter_libs: ^0.5.18 # 添加 Android/iOS 平台的 SQLite 二进制文件
   path_provider: ^2.1.1
   path: ^1.8.3
   shared_preferences: ^2.2.2

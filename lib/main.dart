@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-// #if dart.library.ffi
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-// #endif
+import 'dart:io' show Platform;
 import 'screens/home_screen.dart';
 
 void main() {
-  // Initialize FFI
-  // #if dart.library.ffi
-  // Initialize FFI
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
-  // #endif
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 根据平台选择合适的数据库初始化方式
+  if (Platform.isWindows || Platform.isLinux) {
+    // 在桌面平台上使用FFI
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  } else if (Platform.isAndroid) {
+    // 在Android平台上，确保使用sqlite3_flutter_libs提供的二进制文件
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+  // 在iOS和macOS上，默认使用原生sqflite，不需要特殊处理
+  
   runApp(const MyApp());
 }
 
