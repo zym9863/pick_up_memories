@@ -57,8 +57,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-zip
-          path: |
-            *.zip
+          path: pick_up_memories-windows.zip
+          if-no-files-found: error
 
   build-android:
     name: Build Android APKs
@@ -84,27 +84,41 @@ jobs:
       - name: Build APK (per ABI)
         run: flutter build apk --release --split-per-abi
 
-      - name: Rename APKs with tag
+      - name: Rename APKs with ABI suffix
+        shell: bash
         run: |
-          set -e
-          OUT="build/app/outputs/flutter-apk"
-          ls -la "$OUT"
-          for f in "$OUT"/*-release-*.apk; do
+          set -euo pipefail
+          OUT_ROOT="build/app/outputs"
+          echo "Searching APKs under: $OUT_ROOT"
+          APK_LIST=$(find "$OUT_ROOT" -type f -name "*-release.apk" | sort || true)
+          if [[ -z "$APK_LIST" ]]; then
+            echo "No *-release.apk found under $OUT_ROOT"
+            find "$OUT_ROOT" -maxdepth 3 -type d -print
+            exit 1
+          fi
+          echo "Found APKs:" && echo "$APK_LIST"
+          copied=0
+          while IFS= read -r f; do
             base=$(basename "$f")
             # Expect names like app-arm64-v8a-release.apk, app-armeabi-v7a-release.apk, app-x86_64-release.apk
-            abi=$(echo "$base" | sed -nE 's/.*-(arm64-v8a|armeabi-v7a|x86_64)-release.*/\1/p')
-            if [ -z "$abi" ]; then echo "Skip $base, ABI not detected"; continue; fi
+            abi=$(echo "$base" | sed -nE 's/.*-(arm64-v8a|armeabi-v7a|x86_64)-release\.apk/\1/p')
+            if [[ -z "$abi" ]]; then echo "Skip $base, ABI not detected"; continue; fi
             new="pick_up_memories-${abi}.apk"
             cp "$f" "$new"
-            echo "Renamed $base -> $new"
-          done
+            echo "Copied $base -> $new"
+            copied=$((copied+1))
+          done <<< "$APK_LIST"
+          if [[ $copied -eq 0 ]]; then
+            echo "No per-ABI APKs were copied. Ensure --split-per-abi produced ABI-suffixed files."
+            exit 1
+          fi
 
       - name: Upload android artifacts
         uses: actions/upload-artifact@v4
         with:
           name: android-apks
-          path: |
-            *.apk
+          path: pick_up_memories-*.apk
+          if-no-files-found: error
 
   release:
     name: Create GitHub Release
