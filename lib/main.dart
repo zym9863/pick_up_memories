@@ -79,14 +79,14 @@ class MyApp extends StatelessWidget {
             textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, fontFamily: 'NotoSansSC'),
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 2.0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12.0),
           ),
           margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
         ),
-        dialogTheme: DialogTheme(
+        dialogTheme: DialogThemeData(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
           ),
